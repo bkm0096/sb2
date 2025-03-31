@@ -1,4 +1,4 @@
-package com.rabe.sb2;
+package org.rabe.sb2;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

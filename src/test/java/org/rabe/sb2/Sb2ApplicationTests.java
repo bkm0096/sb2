@@ -1,4 +1,4 @@
-package com.rabe.sb2;
+package org.rabe.sb2;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
