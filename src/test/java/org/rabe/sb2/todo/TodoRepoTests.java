@@ -1,44 +1,98 @@
 package org.rabe.sb2.todo;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.rabe.sb2.todo.entities.Todo;
-import org.rabe.sb2.todo.repository.TodoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.annotation.Commit;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.jpa.JPQLQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.jpa.JPQLQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import org.rabe.sb2.todo.entities.QTodo;
+import org.rabe.sb2.todo.entities.Todo;
+import org.rabe.sb2.todo.repository.TodoRepository;
 import lombok.extern.log4j.Log4j2;
 
 @SpringBootTest
 @Log4j2
 @Transactional
 public class TodoRepoTests {
-  
+
   @Autowired(required = false)
   private TodoRepository repository;
 
+  @Autowired
+  private JPAQueryFactory queryFactory;
 
-  //gradlew build -x test
-  //@Disabled
+
   @Test
-  @Commit
-  public void testInsert(){
-    //insert는 save( )하시면 끝 
+  public void testQuery() {
 
-    for(int i = 0; i < 50 ; i++){
-      Todo todo = Todo.builder()
-      .title("Test")
-      .writer("user1")
-      .build();
+    log.info(queryFactory);
 
-      repository.save(todo);
-    }
+    QTodo todo = QTodo.todo;
+
+    JPQLQuery<Todo> query = queryFactory.selectFrom(todo);
+
+    query.where(todo.tno.gt(0L));
+    query.where(todo.title.like("AAA"));
+
+    query.orderBy(new OrderSpecifier<>(Order.DESC, todo.tno));
+    
+    query.limit(10);
+    query.offset(5);
+
+    log.info(query);
+
+    java.util.List<Todo> entityList = query.fetch();
+
+    long count  = query.fetchCount();
+
+    log.info(entityList);
+    log.info(count);
+
   }
 
   @Test
-  public void testRead(){
+  public void testSearch1() {
+    Pageable pageable = PageRequest.of(0, 10);
+
+    repository.list1(pageable);
+  }
+
+
+  // gradlew build -x test
+  // @Disabled
+  @Test
+  @Commit
+  public void testInsert() {
+    // insert는 save( )하시면 끝
+
+    Todo todo = Todo.builder()
+        .title("Test")
+        .writer("user1")
+        .build();
+
+    repository.save(todo);
+
+    log.info("=============================================");
+    log.info(todo.getTno());
+  }
+
+  @Test
+  public void testRead() {
 
     java.util.Optional<Todo> result = repository.findById(1L);
 
@@ -67,6 +121,34 @@ public class TodoRepoTests {
 
   }
 
+  @Test
+  public void testList() {
 
+    org.springframework.data.domain.Pageable pageable
+     = PageRequest.of(0,10, Sort.by("tno").descending());
+
+    Page<Todo> result = repository.findAll(pageable);
+
+    result.get().forEach(todo -> log.info(todo));
+
+    log.info("---------------");
+    log.info(result.getTotalElements());
+    log.info(result.getNumber());
+    log.info(result.getSize());
+
+  }
+
+  @Test
+  public void testQuery1() {
+
+    org.springframework.data.domain.Pageable pageable = PageRequest.of(0, 10, Sort.by("tno").descending());
+
+    repository.listOfTitle("AAA", pageable);
+  }
+
+  @Test
+  public void testSelectDTO() {
+    log.info(repository.selectDTO(1L));
+  }
 
 }
