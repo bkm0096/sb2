@@ -33,21 +33,27 @@ public class BoardSearchImpl implements BoardSearch {
 
     //검색 조건
     BooleanBuilder builder = new BooleanBuilder();
-    String[] types = pageRequestDTO.getArr(); // ['T', 'C', 'W']
-    if (types.length > 0) {
-      String keyword = pageRequestDTO.getKeyword();
-      for (String type : types) {
 
-        if (type.equals("T")) {
+    String[] types = pageRequestDTO.getArr(); // ['T','C','W']
+
+    if(types != null && types.length > 0 ){
+
+      String keyword = pageRequestDTO.getKeyword();
+
+      for (String type : types) {
+        if(type.equals("T")){
           builder.or(board.title.contains(keyword));
-        }else if(type.equals("C")) {
+        }else if(type.equals("C")){
           builder.or(board.content.contains(keyword));
-        }else if(type.equals("W")) {
+        }else if(type.equals("W")){
           builder.or(board.writer.contains(keyword));
         }
-        query.where(builder);
       }//end for
+      query.where(builder);
+
     }//end if
+    
+
 
     query.limit(pageRequestDTO.getLimit());
     query.offset(pageRequestDTO.getOffset());
@@ -61,9 +67,6 @@ public class BoardSearchImpl implements BoardSearch {
     long count = dtoQuery.fetchCount();
     
     java.util.List<BoardListDTO> dtoList = dtoQuery.fetch();
-    
-    log.info(dtoList);
-    log.info(count);
 
     return PageResponseDTO.<BoardListDTO>withAll()
     .dtoList(dtoList)
@@ -71,4 +74,5 @@ public class BoardSearchImpl implements BoardSearch {
     .pageRequestDTO(pageRequestDTO)
     .build();
   }
+  
 }
